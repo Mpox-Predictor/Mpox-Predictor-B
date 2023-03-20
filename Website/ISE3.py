@@ -20,7 +20,7 @@ from textwrap import dedent
 #from Capstone import forecast
 
 #app = dash.Dash(external_stylesheets = [ dbc.themes.FLATLY],)
-app = dash.Dash(__name__, title='Mpox', update_title=None)
+app = dash.Dash(__name__,external_stylesheets = [ dbc.themes.SOLAR], title='Mpox', update_title=None)
 server = app.server
 
 #png
@@ -81,9 +81,10 @@ Sdata2['Country Code'] = Sdata['Country Code']
 
 def world_map(Sdata2):
     fig = px.choropleth(Sdata2, locations='Country Code', locationmode = 'ISO-3',color = 'current_year',
-                        hover_data = ['Country Code'],
+                        hover_data = ['Countries'],
                         projection="orthographic",
-                        color_continuous_scale=px.colors.sequential.Oranges,
+                        #color_continuous_scale=px.colors.sequential.Oranges,
+                        color_continuous_scale=px.colors.sequential.BuPu,
                         range_color=(0, 20),
                         labels = {"Cases": "Reported Cases"},)
 
@@ -126,7 +127,7 @@ def build_modal_info_overlay(id, side, content):
             html.Div(className="modal"),],id=f"{id}-modal",style={"display": "none"},)
     return div
 ############################################ body of the dashboard ###########################
-body_app = dbc.Container([
+body_app = dbc.Container( id = 'body_app', children = [
 
     #dbc.Row(html.Marquee("Mpox Model Last Updated: 2/14/22"), style = {'color':'green'}),
 
@@ -137,7 +138,7 @@ body_app = dbc.Container([
         dbc.Col(
             html.Div(
             #[dbc.Alert([html.I(id='Broken_dropdown', className="bi bi-info-circle-fill me-2"),"An example info alert with an icon",],is_open=False, color="info",className="d-flex align-items-center",),
-            [dcc.ConfirmDialog(id='Broken_dropdown', message='This version of the website only supports The Contry input United States'),
+            [dcc.ConfirmDialog(id='Broken_dropdown', message='This version of the website only supports The Country input United States'),
              dcc.Dropdown(id = 'country-dropdown',
                 options = [{'label':i, 'value': i} for i in np.append(['All'],Gdata ['Countries'].unique()) ],
                 value = 'United States',
@@ -158,8 +159,7 @@ body_app = dbc.Container([
                 display_format='MM/DD/YYYY',
                 clearable=False,
             )]),
-            style = {'width':'50%', 'color':'black', 'text-align':'left', 'display':'inline-block'},
-            xs = 12, sm = 12, md = 6, lg = 6, xl = 6)
+            style = {'width':'50%', 'color':'black', 'text-align':'left', 'display':'inline-block'})
     ]),
     dbc.Row(
         id = "card_row", children = [card_body1,card_body2,card_body3]
@@ -168,55 +168,60 @@ body_app = dbc.Container([
 
     html.Br(),
 
-    dbc.Row([html.Div(html.H4('Global Impact of Mpox'),
-                      style = {'textAlign':'center','fontWeight':'bold','family':'georgia','width':'100%'})]),
+    dbc.Row([html.Div(html.H4('Global Impact of Mpox',className="container_title"),
+                      style = {'color':'white','textAlign':'center','fontWeight':'bold','family':'georgia','width':'100%'})]),
 
     html.Br(),
 
     dbc.Row([
-        html.Div(children =[build_modal_info_overlay("graph-info","bottom",dedent("""graph-info""")),
-            build_modal_info_overlay("graphic-info","bottom",dedent("""graphic-info""")),
+        html.Div(children =[build_modal_info_overlay("graph-info","bottom",dedent("""
+        This interactive globe shows the # of reported cases in each country based on a color gradient
+        scale. Feel free to move the globe to see the number of reported cases in each country. Countries
+        with a gray color do not have a clear value of reported cases and are not included in the data
+        that we pulled information from""")),
+            build_modal_info_overlay("graphic-info","bottom",dedent("""
+            The following is a trendline for data based on other countries for the next 14 days""")),
             html.Div(dbc.Col(children=[
-            html.H4(["Reported Cases by year",html.Img(id="show-graph-info-modal",src="assets/question-circle-solid.svg",className="info-icon")],className="container_title"),
-            dcc.Graph(id = 'world-graph', figure = world_map(Sdata2))],style = {'height':'400px', 'width':"625px", "margin-right": "10"},xs = 12, sm = 12, md = 6, lg = 6, xl = 6,className="six columns pretty_container"), id="graph-info-div",className='container'),
-            #html.Div(children =[build_modal_info_overlay("graphic-info","bottom",dedent("""graphic-info""")),
+                html.H4(["Reported Cases by year",html.Img(id="show-graph-info-modal",src="assets/question-circle-solid.svg",className="info-icon")],className="container_title"),
+                dcc.Graph(id = 'world-graph', figure = world_map(Sdata2))],style = {'height':'400px', 'width':"625px", "margin-right": "4",},xs = 12, sm = 12, md = 6, lg = 6, xl = 6,className="six columns pretty_container"), id="graph-info-div",className='container'),
+                #Verticalbreak
             html.Div(dbc.Col(children=[
-            html.H4(["Prediction model trend",html.Img(id="show-graphic-info-modal",src="assets/question-circle-solid.svg",className="info-icon")],className="container_title"),
-            html.Img(src = Forcast_IMG, height = "350px", width = "605px")],style = {'height':'400px', 'width':"625px"},xs = 12, sm = 12, md = 6, lg = 6, xl = 6,className="six columns pretty_container"), id="graphic-info-div",className='container'),
-        ])
+                html.H4(["Prediction model trend",html.Img(id="show-graphic-info-modal",src="assets/question-circle-solid.svg",className="info-icon")],className="container_title"),
+                html.Img(src = Forcast_IMG, height = "350px", width = "605px")],style = {'height':'400px', 'width':"625px", "margin-left": "4",},xs = 12, sm = 12, md = 6, lg = 6, xl = 6,className="six columns pretty_container"), id="graphic-info-div",className='container'),
+        ],),
     ]),
 
 
     html.Br(),
 
-    html.Div(
-            [
+    html.Div([
                 html.H4("Acknowledgements", style={"margin-top": "0"}),
                 dcc.Markdown(
                     """\
- - Dashboard written in Python using the [Dash](https://dash.plot.ly/) web framework.
- - Parallel and distributed calculations implemented using the [Dask](https://dask.org/) Python library.
- - Server-side visualization of the location of all 40 million cell towers performed
- using the [Datashader] Python library (https://datashader.org/).
- - Base map layer is the ["light" map style](https://www.mapbox.com/maps/light-dark/)
- provided by [mapbox](https://www.mapbox.com/).
- - Cell tower dataset provided by the [OpenCelliD Project](https://opencellid.org/) which is licensed under a
-[_Creative Commons Attribution-ShareAlike 4.0 International License_](https://creativecommons.org/licenses/by-sa/4.0/).
- - Mapping from cell MCC/MNC to network operator scraped from https://cellidfinder.com/mcc-mnc.
+ - Dashboard written in Python using the [Dash](https://dash.plot.ly/) web framework and [Flask] (https://flask.palletsprojects.com/en/2.2.x/) alongside CSS style sheets.
+ - Parallel and distributed calculations implemented using the python based compiler [Datalore](https://datalore.jetbrains.com/).
+ - Base graphic containers used from [World Cell Towers dashboard] (https://github.com/plotly/dash-world-cell-towers)
+ - Mpox dataset provided by [?] (https://datalore.jetbrains.com/)
  - Icons provided by [Font Awesome](https://fontawesome.com/) and used under the
 [_Font Awesome Free License_](https://fontawesome.com/license/free).
-"""
-                ),
-            ],
-            style={
-                "width": "100%",
-                "margin-right": "10",
-                "padding": "10px",
-            },
-            className="twelve columns pretty_container",
-        )
 
-    ],fluid = True)
+ _Created by Oluwaseun Adesina, Sarah Donovan, Kris Florentino, Bradley James, and Michael Krycun_
+
+ __More information on the design of our website and model can be found on our [github] (https://github.com/Mpox-Predictor/Mpox-Code) page where you can also give feedback__
+"""
+
+#https://github.com/owid/monkeypox
+                )],
+                style={
+                    'width': '100%',
+                    'margin-right': '5',
+                    'padding': '10px',
+                    'horizontal-align': 'middle',
+                },
+                className="twelve columns pretty_container",
+        ),
+
+    ],fluid = True,)
 ############################## navigation bar ################################
 navbar = dbc.Navbar( id = 'navbar', children = [
 
@@ -233,12 +238,28 @@ navbar = dbc.Navbar( id = 'navbar', children = [
     dbc.Row([
         #dbc.Col(dbc.Button(id = 'button', children = "Github", color = "warning", className = 'ms-2', href = 'https://github.com/Mpox-Predictor/Mpox-Code')),
 
-        html.Div(children =[build_modal_info_overlay("general","top",dedent("""general""")),
+        html.Div(children =[build_modal_info_overlay("general","top",dedent("""
+        The purpose of this website is to offer the user an international prediction model for Mpox
+        cases. Please select a country and date as the two major inputs. The website will then output
+        the number of past historical cases one day before your selected day, the # of cases on your
+        selected date, and the # of future predicted cases one day after your selected date.""")),
         html.Div(html.H4(["Info",html.Img(id="show-general-modal",src="assets/question-circle-solid.svg",className="info-icon")],className="container_title"),
         id="general-div")]),
     ],className="g-0 ms-auto flex-nowrap mt-3 mt-md-0")
 ])
+
+# Define the HTML structure of your index.html file
+#index_html = html.Div(id = 'parent', children = [navbar,body_app])
+
+# Write the HTML to a file
+#with open('index.html', 'w') as f:
+#    f.write(index_html.to_html())
+
+
+
+
 app.layout = html.Div(id = 'parent', children = [navbar,body_app])
+#app.layout = dcc.Iframe(src='https://www.Mpox123.com', width='100%', height='500', Web)
 
 #################################### Callback for adding interactivity to the dashboard #######################
 
@@ -294,6 +315,7 @@ for id in ["general","graph-info","graphic-info"]:
             return {"display": "block"}, {"zIndex": 1003}
         else:
             return {"display": "none"}, {"zIndex": 0}
+
 
 if __name__ == "__main__":
     app.run_server()
