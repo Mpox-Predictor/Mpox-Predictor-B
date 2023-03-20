@@ -21,6 +21,7 @@ from textwrap import dedent
 
 #app = dash.Dash(external_stylesheets = [ dbc.themes.FLATLY],)
 app = dash.Dash(__name__, title='Mpox', update_title=None)
+server = app.server
 
 #png
 MPOX_IMG = "https://ichef.bbci.co.uk/news/976/cpsprodpb/183FD/production/_124852399_hi067948842-1.jpg"
